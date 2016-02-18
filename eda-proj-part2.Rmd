@@ -148,6 +148,8 @@ ggsave('gridarrange.png')
 ```{r}
 # Gapminder Part 2
 
+# To be completed.
+
 library(ggplot2)
 library(dplyr)
 library(tidyr)
