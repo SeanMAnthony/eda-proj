@@ -1,0 +1,170 @@
+---
+title: 'EDA Project: Diamond Prices (Part 2)'
+author: "Sean Anthony"
+date: "February 13, 2016
+output: html_document
+---
+1
+```{r}
+install.packages('ggplot2')
+library(ggplot2)
+data(diamonds)
+summary(diamonds)
+setwd("/Users/sa1251/Documents/eda-project/eda-project")
+getwd()
+```
+
+
+```{r}
+# Your first task is to create a
+# scatterplot of price vs x.
+# using the ggplot syntax.
+
+ggplot(aes(x = price, y = x), data = diamonds) + geom_point()
+ggsave('price_vs_x.png')
+```
+
+
+```{r}
+# Create a simple scatter plot of price vs depth.
+
+ggplot(aes(x = price, y = depth), data = diamonds) + geom_point(alpha = 0.1)
+ggsave('price_vs_depth.png')
+```
+
+
+```{r}
+# Change the code to make the transparency of the
+# points to be 1/100 of what they are now and mark
+# the x-axis every 2 units. See the instructor notes
+# for two hints.
+
+ggplot(data = diamonds, aes(x = depth, y = price)) + 
+  geom_point(alpha = 0.01) + scale_x_continuous( breaks = seq(50, 80, 2))
+ggsave('transparency_1_100.png')
+```
+
+
+```{r}
+# Create a scatterplot of price vs carat
+# and omit the top 1% of price and carat
+# values.
+
+ggplot(aes(x = price, y = carat), data = diamonds) +
+  geom_point(alpha = 0.05) +
+  xlim(0, quantile(diamonds$price, 0.99)) +
+  ylim(0, quantile(diamonds$carat, 0.99)) +
+  geom_smooth(method = 'lm', color = 'red')
+ggsave('price_vs_carat_omit1.png')
+```
+
+
+```{r}
+# Create a scatterplot of price vs. volume (x * y * z).
+# This is a very rough approximation for a diamond's volume.
+# Create a new variable for volume in the diamonds data frame.# Create a scatterplot of price vs. volume (x * y * z).
+# This is a very rough approximation for a diamond's volume.
+# Create a new variable for volume in the diamonds data frame.
+
+diamonds$diamond_volume <- (diamonds$x * diamonds$y * diamonds$z)
+ggplot(aes(x = price, y = diamond_volume), data = diamonds) + 
+  geom_point(alpha = 0.05)
+ggsave('price_vs_volume.png')
+```
+
+
+```{r}
+# Subset the data to exclude diamonds with a volume
+# greater than or equal to 800. Also, exclude diamonds
+# with a volume of 0. Adjust the transparency of the
+# points and add a linear model to the plot.
+
+ggplot(aes(x = price, y = diamond_volume), data = subset(diamonds, diamond_volume > 0 & diamond_volume <= 800)) +
+  geom_point(alpha = 0.05) + geom_smooth(method = 'lm', color = 'red')
+ggsave('excl_volume.png')
+```
+
+
+```{r}
+# Use the function dplyr package
+# to create a new data frame containing
+# info on diamonds by clarity.
+
+# Name the data frame diamondsByClarity
+
+# The data frame should contain the following
+# variables in this order.
+
+#       (1) mean_price
+#       (2) median_price
+#       (3) min_price
+#       (4) max_price
+#       (5) n
+
+# where n is the number of diamonds in each
+# level of clarity.
+
+install.packages('dplyr')
+library(dplyr)
+
+diamondsByClarity <- diamonds %>%
+  group_by(clarity) %>%
+  summarise(mean_price = mean(price), median_price = median(price), 
+            min_price = min(price), max_price = max(price), n = n()) %>%
+  arrange(clarity)
+```
+
+
+```{r}
+# We’ve created summary data frames with the mean price
+# by clarity and color. You can run the code in R to
+# verify what data is in the variables diamonds_mp_by_clarity
+# and diamonds_mp_by_color.
+
+# Your task is to write additional code to create two bar plots
+# on one output image using the grid.arrange() function from the package
+# gridExtra.
+
+diamonds_by_clarity <- group_by(diamonds, clarity)
+diamonds_mp_by_clarity <- summarise(diamonds_by_clarity, mean_price = mean(price))
+
+diamonds_by_color <- group_by(diamonds, color)
+diamonds_mp_by_color <- summarise(diamonds_by_color, mean_price = mean(price))
+
+d1 <- ggplot(aes(x = color, y = mean_price), data = diamonds_mp_by_color) + 
+  geom_bar(stat = 'identity')
+
+d2 <- ggplot(aes(x = clarity, y = mean_price), data = diamonds_mp_by_clarity) +
+  geom_bar(stat = 'identity')
+
+install.packages('gridExtra')
+library(gridExtra)
+
+grid.arrange(d1, d2, ncol = 1)
+ggsave('gridarrange.png')
+```
+
+
+```{r}
+# Gapminder Part 2
+
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+
+life_exp <- read.csv('life_exp.csv', header = T, check.names = F)
+life_exp <- gather(life_exp, "year", "n", 2:217)
+life_exp.usa <- filter(life_exp, country == 'United States')
+life_exp.usa <- filter(life_exp.usa, year >= 1985)
+
+# I wanted to explore the average life expectancy of an American citizen since my year of birth in 
+# 1985. After creating the data frame featuring all countries' life expectancy data, I filtered for # just the USA's data. I then filtered for >= 1985 data. As you can see from the graph, there is a 
+# relatively small, consistent increase in life exptectancy over time. 
+
+ggplot(aes(x = year, y = n), data = life_exp.usa) + geom_point() + 
+  xlab('Year') + ylab('Average Life Expectancy')
+ggsave('usa_geompoint.png')
+
+
+
+```
