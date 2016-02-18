@@ -1,0 +1,147 @@
+---
+title: 'EDA Project: Diamond Prices (Part 1)'
+author: "Sean Anthony"
+date: "February 17, 2016"
+output: html_document
+---
+
+```{r}
+install.packages('ggplot2')
+library(ggplot2)
+data(diamonds)
+summary(diamonds)
+
+setwd("/Users/sa1251/Documents/eda-project/eda-project")
+getwd()
+```
+
+# Create a histogram of the price of
+# all the diamonds in the diamond data set.
+
+```{r}
+qplot(x = price, data = diamonds)
+ggsave('price_diamonds.png')
+```
+
+# Explore the largest peak in the
+# price histogram you created earlier.
+
+```{r}
+qplot(x = price, data = diamonds, binwidth = 100, color = I('black'), fill = I('#F79420')) + 
+  scale_x_continuous(limits = c(500, 1500), breaks = seq(500, 1500, 100))
+ggsave('largest_peak.png')
+```
+
+# Break out the histogram of diamond prices by cut.
+
+```{r}
+qplot( x = price, data = diamonds, color = I('black'), fill = I('#F79420')) + 
+  facet_wrap(~cut)
+ggsave('prices_by_cut.png')
+```
+
+# Look up the documentation for facet_wrap in R Studio.
+# Then, scroll back up and add a parameter to facet_wrap so that
+# the y-axis in the histograms is not fixed. You want the y-axis to
+# be different for each histogram.
+
+```{r}
+qplot(x = price, data = diamonds) + facet_wrap(~cut, scales = "free_y")
+ggsave('facet_free_y.png')
+```
+
+# Create a histogram of price per carat
+# and facet it by cut. You can make adjustments
+# to the code from the previous exercise to get
+# started.
+
+```{r}
+qplot(x = price/carat, data = diamonds, binwidth = .05, color = I('black'), fill = I('#F79420')) + 
+  facet_wrap(~cut) + scale_x_log10(limits = c(1000, 12000), breaks = seq(0, 10000, 2000))
+ggsave('price_per_carat.png')
+```
+
+# Investigate the price of diamonds using box plots,
+# numerical summaries, and one of the following categorical
+# variables: cut, clarity, or color.
+
+```{r}
+by(diamonds$price, diamonds$color, summary)
+qplot(x = color, y = price, data = diamonds, geom = 'boxplot') +
+  coord_cartesian(ylim = c(1000, 8000))
+ggsave('diamonds_boxplot.png')
+
+```
+
+# Investigate the price per carat of diamonds across
+# the different colors of diamonds using boxplots.
+
+```{r}
+qplot(x = color, y = price/carat, data = diamonds, geom = 'boxplot') + 
+  scale_y_log10(breaks = seq(2000, 10000, 1000))
+ggsave('price_per_carat_boxplot.png')
+```
+
+# Gapminder Data
+
+```{r}
+
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+
+life_exp <- read.csv('life_exp.csv', header = T, check.names = F)
+life_exp <- gather(life_exp, "year", "n", 2:217)
+
+
+# This graph shows the distribution of all countries' average life expectancies over the last 
+# decade.
+
+ggplot(aes(x = n, binwidth = 1), data = subset(life_exp, year >= 2006)) + 
+  geom_histogram(color = I('black'), fill = I('#F79420')) + xlab('Average Life Expectancy') + 
+  scale_x_continuous(limits = c(40, 90), breaks = seq(40, 90, 2))
+ggsave('last_decade_histogram.png')
+
+# I've highlighted this same data using different tools. This dotplot faceted by every year may
+# do a better job highlighting yearly differences. 
+
+ggplot(aes(x = n), data = subset(life_exp, year >= 2006)) + geom_dotplot() + 
+  xlab('Average Life Expectancy') + facet_wrap(~year, ncol = 5) + 
+  scale_x_continuous(limits = c(40,90), breaks = seq(40, 90, 5))
+ggsave('last_decade_dotplot.png')
+
+```
+
+# Facebook Birthday Data
+
+```{r}
+
+# Using the sample data set
+
+bday_data <- read.csv('birthdaysExample-2.csv')
+library(dplyr)
+library(tidyr)
+bday_data <- as.Date(bday_data$dates, format = "%m/%d/%y")
+bday_data <- as.data.frame(bday_data)
+colnames(bday_data)[1] <- 'dates'
+bday_data <- separate(bday_data, dates, c("y", "m", "d"))
+colnames(bday_data)[1:3] <- c('year', 'month', 'day')
+
+# How many people share your birthday?
+filter(bday_data, month == 12, day == 10)
+
+# Which month contains the most number of birthdays?
+table(bday_data$month)
+max(table(bday_data$month))
+
+# How many birthdays are in each month?
+table(bday_data$month)
+
+# Which day of the year has the most number of birthdays?
+table(bday_data$day)
+max(table(bday_data$day))
+
+# Do you have at least 365 friends that have birthdays on every day of the year?
+distinct(bday_data)
+```
+
